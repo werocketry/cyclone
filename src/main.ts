@@ -1,44 +1,85 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, ipcMain } from "electron";
 import * as path from "path";
+import { promises as fsPromises } from 'fs';
+import { createWriteStream } from 'fs';
+import { MarlinPort } from "./marlin-port";
+import { planWind } from "./planner";
+import { plotGCode } from "./plotter";
 
+// Function to create the window
 function createWindow() {
-  // Create the browser window.
   const mainWindow = new BrowserWindow({
     height: 600,
+    width: 800,
     webPreferences: {
+      nodeIntegration: false, // Important for security
       preload: path.join(__dirname, "preload.js"),
     },
-    width: 800,
   });
 
-  // and load the index.html of the app.
   mainWindow.loadFile(path.join(__dirname, "../index.html"));
-
-  // Open the DevTools.
   mainWindow.webContents.openDevTools();
 }
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
+// Electron ready event
 app.on("ready", () => {
   createWindow();
-
   app.on("activate", function () {
-    // On macOS it's common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
 });
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
+// Window-all-closed event to quit app
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
     app.quit();
   }
 });
 
-// In this file you can include the rest of your app"s specific main process
-// code. You can also put them in separate files and require them here.
+// IPC Handlers
+ipcMain.handle("plan", async (_, { windFile, outputFilePath }) => {
+  try {
+    // Get the absolute file path from the renderer's File object
+    const windFilePath = windFile.path; // This should now be passed from the renderer
+
+    console.log("IPC Plan call - Wind File Path:", windFilePath);
+    console.log("IPC Plan call - Output File Path:", outputFilePath);
+
+    // Read the wind file using the full path
+    const windData = JSON.parse(await fsPromises.readFile(windFilePath, "utf8"));
+    const gcode = planWind(windData, false);
+    await fsPromises.writeFile(outputFilePath, gcode.join("\n"));
+
+    return { success: true, message: `GCode saved to ${outputFilePath}` };
+  } catch (error) {
+    console.error("Error in IPC Plan handler:", error.message);
+    return { success: false, message: `Error: ${error.message}` };
+  }
+});
+
+// Plotting and running gcode remain unchanged
+ipcMain.handle("plot", async (_, { gcodeFilePath, outputFilePath }) => {
+  try {
+    const gcodeContent = await fsPromises.readFile(gcodeFilePath, "utf8");
+    const stream = plotGCode(gcodeContent.split("\n"));
+    if (!stream) throw new Error("Failed to generate plot.");
+    const fileStream = createWriteStream(outputFilePath);
+    stream.pipe(fileStream);
+    return { success: true, message: `Plot saved to ${outputFilePath}` };
+  } catch (error) {
+    return { success: false, message: `Error: ${error.message}` };
+  }
+});
+
+ipcMain.handle("run", async (_, { gcodeFilePath, serialPort }) => {
+  try {
+    const gcodeContent = await fsPromises.readFile(gcodeFilePath, "utf8");
+    const marlin = new MarlinPort(serialPort, false);
+    await marlin.initialize();
+
+    gcodeContent.split("\n").forEach((command) => marlin.queueCommand(command));
+    return { success: true, message: "GCode sent successfully" };
+  } catch (error) {
+    return { success: false, message: `Error: ${error.message}` };
+  }
+});

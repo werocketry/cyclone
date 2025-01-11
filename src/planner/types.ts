@@ -75,7 +75,7 @@ export const enum ECoordinateAxes {
 
 export type TCoordinateAxes = Record<ECoordinateAxes, number>;
 
-export type AtLeastOne<T, U = {[K in keyof T]: Pick<T, K> }> = Partial<T> & U[keyof U];
+export type AtLeastOne<T, U = { [K in keyof T]: Pick<T, K> }> = Partial<T> & U[keyof U];
 
 export type TCoordinate = AtLeastOne<TCoordinateAxes>;
 

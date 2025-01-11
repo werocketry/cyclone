@@ -16,7 +16,7 @@ export class WinderMachine {
     private mandrelDiameter: number;
 
     constructor(mandrelDiameter: number, verboseOutput = false) {
-        this.lastPosition = {[ECoordinateAxes.CARRIAGE]: 0, [ECoordinateAxes.MANDREL]: 0, [ECoordinateAxes.DELIVERY_HEAD]: 0}
+        this.lastPosition = { [ECoordinateAxes.CARRIAGE]: 0, [ECoordinateAxes.MANDREL]: 0, [ECoordinateAxes.DELIVERY_HEAD]: 0 }
         this.mandrelDiameter = mandrelDiameter;
         this.verboseOutput = verboseOutput;
     }
@@ -37,7 +37,7 @@ export class WinderMachine {
     public move(position: TCoordinate): void {
         // Construct a fully-specified destination coordinate
         // Start with the old position, and replace any values specified in the new one
-        const completeEndPosition = {...this.lastPosition, ...position};
+        const completeEndPosition = { ...this.lastPosition, ...position };
         const doSegmentMove = this.lastPosition[ECoordinateAxes.CARRIAGE] !== completeEndPosition[ECoordinateAxes.CARRIAGE];
         // If we don't need to divide the move into multiple segments, run it as just one.
         if (!doSegmentMove) {

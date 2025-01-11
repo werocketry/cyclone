@@ -1,4 +1,5 @@
-import type { IWindParameters,
+import type {
+    IWindParameters,
     IMandrelParameters,
     ITowParameters,
     ILayerParameters,
@@ -9,7 +10,7 @@ import type { IWindParameters,
 import { ECoordinateAxes } from './types';
 import { ELayerType } from './types';
 import { WinderMachine } from './machine';
-import { radToDeg, degToRad } from '../helpers'; 
+import { radToDeg, degToRad } from '../helpers';
 
 export function planWind(windingParameters: IWindParameters, verboseOutput = false): string[] {
 
@@ -38,7 +39,7 @@ export function planWind(windingParameters: IWindParameters, verboseOutput = fal
         const layerComment = `Layer ${layerIndex + 1} of ${windingParameters.layers.length}: ${layer.windType}`;
         console.log(layerComment)
         machine.insertComment(layerComment);
-        switch(layer.windType) {
+        switch (layer.windType) {
             case ELayerType.HOOP:
                 planHoopLayer(machine, {
                     parameters: layer,
@@ -92,7 +93,7 @@ export function planHoopLayer(machine: WinderMachine, layerParameters: ILayerPar
 
     const lockDegrees = 180;
 
-     // Used for the delivery head angle
+    // Used for the delivery head angle
     const windAngle = 90 - radToDeg(Math.atan(layerParameters.mandrelParameters.diameter / layerParameters.towParameters.width));
     const mandrelRotatations = layerParameters.mandrelParameters.windLength / layerParameters.towParameters.width;
     const farMandrelPositionDegrees = lockDegrees + (mandrelRotatations * 360);
@@ -211,9 +212,9 @@ export function planHelicalLayer(machine: WinderMachine, layerParameters: ILayer
 
     let mandrelPositionDegrees = 0;
     // The outer loop tracks the number of times we complete the pattern on the mandrel
-    for (let patternIndex = 0; patternIndex < numberOfPatterns; patternIndex ++) {
+    for (let patternIndex = 0; patternIndex < numberOfPatterns; patternIndex++) {
         // The inner loop tracks the <pattern number> evenly-spaced start positions around the mandrel in each pattern
-        for(let inPatternIndex = 0; inPatternIndex < patternNumber; inPatternIndex ++) {
+        for (let inPatternIndex = 0; inPatternIndex < patternNumber; inPatternIndex++) {
             machine.insertComment(`\tPattern: ${patternIndex + 1}/${numberOfPatterns} Circuit: ${inPatternIndex + 1}/${patternNumber}`);
 
             for (let passParams of passParameters) {

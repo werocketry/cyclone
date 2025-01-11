@@ -2,7 +2,8 @@ import { MarlinPort } from './marlin-port';
 import { planWind } from './planner';
 import { plotGCode } from './plotter';
 import { hideBin } from 'yargs/helpers';
-import { promises as fs, createWriteStream } from 'fs';
+import { promises as fsPromises } from 'fs';
+import { createWriteStream } from 'fs';
 import * as readline from 'readline';
 
 // Looks like using yargs most any other way is kind of broken
@@ -27,7 +28,7 @@ require('yargs').command({
     async handler(argv: Record<string, string>): Promise<void> {
         const marlin = new MarlinPort(argv.port, (argv.verbose as unknown) as boolean);
         const marlinInitialized = marlin.initialize();
-        const data = await fs.readFile(argv.file);
+        const data = await fsPromises.readFile(argv.file);
         console.log(`Sending commands from "${argv.file}"`);
         await marlinInitialized;
 
@@ -55,54 +56,96 @@ require('yargs').command({
         }
     }
 })
-.command({
-    command: 'plan <file>',
-    describe: 'Generate gcode from a .wind file',
-    builder: {
-        output: {
-            alias: 'o',
-            describe: 'File to output to',
-            demandOption: false,
-            type: 'string'
+    .command({
+        command: 'plan <file>',
+        describe: 'Generate gcode from a .wind file',
+        builder: {
+            output: {
+                alias: 'o',
+                describe: 'File to output to',
+                demandOption: false,
+                type: 'string'
+            },
+            verbose: {
+                alias: 'v',
+                describe: 'Include comments explaining segmented moves?',
+                default: false,
+                type: 'boolean'
+            }
         },
-        verbose: {
-            alias: 'v',
-            describe: 'Include comments explaining segmented moves?',
-            default: false,
-            type: 'boolean'
+        async handler(argv: Record<string, string>): Promise<void> {
+            const inputFile = argv._[1];  // The first positional argument (i.e., the .wind file)
+            const outputFile = argv.file;  // Output file passed via the -o flag
+
+            if (!outputFile) {
+                console.error('Error: Output file is required');
+                return;
+            }
+
+            try {
+                const fileContents = await fsPromises.readFile(inputFile, "utf8");
+
+                if (!fileContents.trim()) {
+                    console.error('Error: Input file is empty');
+                    return;
+                }
+
+                console.log("file contents: ", fileContents);
+
+                // Try parsing the file contents
+                const windDefinition = JSON.parse(fileContents);
+
+                // Todo: Verify contents
+                const windCommands = planWind(windDefinition, (argv.verbose as unknown) as boolean);
+                console.log(`Writing to: ${outputFile}`);
+                await fsPromises.writeFile(outputFile, windCommands.join('\n'));
+                console.log(`Wrote ${windCommands.length} commands to "${outputFile}"`);
+            } catch (error) {
+                console.error(`Error reading or parsing the file: ${error.message}`);
+            }
         }
-    },
-    async handler(argv: Record<string, string>): Promise<void> {
-        const fileContents = await fs.readFile(argv.file, "binary");
-        const windDefinition = JSON.parse(fileContents);
-        // Todo: Verify contents
-        const windCommands = planWind(windDefinition, (argv.verbose as unknown) as boolean);
-        await fs.writeFile(argv.output, windCommands.join('\n'));
-        console.log(`Wrote ${windCommands.length} commands to "${argv.output}"`);
-    }
-})
-.command({
-    command: 'plot <file>',
-    describe: 'Visualize the contents of a gcode file',
-    builder: {
-        output: {
-            alias: 'o',
-            describe: 'PNG file to output to',
-            demandOption: true,
-            type: 'string'
+
+    })
+    .command({
+        command: 'plot <file>',
+        describe: 'Visualize the contents of a gcode file',
+        builder: {
+            output: {
+                alias: 'o',
+                describe: 'PNG file to output to',
+                demandOption: false,
+                type: 'string'
+            }
+        },
+        async handler(argv: Record<string, string>): Promise<void> {
+            const inputFile = argv._[1];  // Positional argument: gcode file
+            const outputFile = argv.file;  // Output file from -o flag
+            console.log('argv: ', argv);
+            console.log(`Reading gcode from`, inputFile);
+            console.log(`Writing to`, outputFile);
+
+            if (!inputFile) {
+                console.error('Error: Input file is required');
+                return;
+            }
+
+            if (!outputFile) {
+                console.error('Error: Output file is required');
+                return;
+            }
+
+            const fileContents = await fsPromises.readFile(inputFile, "utf8");
+
+            const stream = plotGCode(fileContents.split('\n'));
+            if (typeof stream === 'undefined') {
+                console.log('No image to write');
+                return;
+            }
+
+            const outputFileStream = createWriteStream(outputFile);
+            stream.pipe(outputFileStream);
+            outputFileStream.on('finish', () => console.log(`The PNG file was created at ${outputFile}`));
         }
-    },
-    async handler(argv: Record<string, string>): Promise<void> {
-        const fileContents = await fs.readFile(argv.file, "binary");
-        const stream = plotGCode(fileContents.split('\n'));
-        if (typeof stream === 'undefined') {
-            console.log('No image to write');
-            return void 0;
-        }
-        const outputFile = createWriteStream(argv.output);
-        stream.pipe(outputFile);
-        outputFile.on('finish', () => console.log(`The PNG file was created at ${argv.output}`));
-    }
-})
-.help()
-.parse(hideBin(process.argv));
+    })
+    .help()
+    .parse(hideBin(process.argv));

@@ -29,7 +29,7 @@ export function plotGCode(gcode: string[]): Readable | void {
     ctx.strokeStyle = 'rgba(0,0,0,1)';
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
+
     for (const line of gcode) {
         const lineParts = line.split(' ');
         if (lineParts[0] === ';') {
@@ -53,7 +53,7 @@ export function plotGCode(gcode: string[]): Readable | void {
             }
         }
 
-        for (const segment of generateCoordinates({x: xCoord, y: yCoord}, {x: nextXCoord, y: nextYCoord})) {
+        for (const segment of generateCoordinates({ x: xCoord, y: yCoord }, { x: nextXCoord, y: nextYCoord })) {
 
             ctx.strokeStyle = 'rgb(73, 0, 168)';
             ctx.lineWidth = windingParameters.tow.width;
@@ -71,7 +71,7 @@ export function plotGCode(gcode: string[]): Readable | void {
             }
             ctx.stroke();
         }
-        
+
         xCoord = nextXCoord;
         yCoord = nextYCoord;
     }

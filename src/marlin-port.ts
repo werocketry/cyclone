@@ -2,7 +2,7 @@ import { SerialPort, ReadlineParser } from 'serialport';
 import { isObject } from './helpers';
 
 export class MarlinPort {
-    
+
     private isInitialized = false;
     private port: SerialPort;
     private parser: ReadlineParser;
@@ -14,7 +14,7 @@ export class MarlinPort {
     private paused = false;
     private resuming = false;
 
-    constructor( private portPath: string, private verbose = false, private baudRate = 115200 ) {
+    constructor(private portPath: string, private verbose = false, private baudRate = 115200) {
 
     }
 
@@ -26,9 +26,9 @@ export class MarlinPort {
         this.hasCommandWaiting = false;
 
         this.port = new SerialPort({
-          path: this.portPath,
-          baudRate: this.baudRate,
-          autoOpen: false
+            path: this.portPath,
+            baudRate: this.baudRate,
+            autoOpen: false
         });
 
         // TODO: .off this in reset
@@ -40,13 +40,13 @@ export class MarlinPort {
         return new Promise((resolve, reject) => {
             console.log(`Opening "${this.portPath}" at ${this.baudRate} baud`);
             this.port.open((error) => {
-              if (isObject(error)) {
-                return reject(`Error opening port: ${error.message}`);
-              }
-              console.log('Port opened.\n');
-              this.isInitialized = true;
-              this.tryNextCommand();
-              resolve();
+                if (isObject(error)) {
+                    return reject(`Error opening port: ${error.message}`);
+                }
+                console.log('Port opened.\n');
+                this.isInitialized = true;
+                this.tryNextCommand();
+                resolve();
             })
         });
     }
@@ -104,22 +104,22 @@ export class MarlinPort {
     }
 
     private processSerialResponseLine(line: string): void {
-        if ( line === 'ok' ) {
-            this.hasCommandWaiting = false; 
+        if (line === 'ok') {
+            this.hasCommandWaiting = false;
             this.tryNextCommand();
             return void 0;
         }
 
-        if ( line === 'echo:busy: processing' || line == 'echo:busy: paused for user' ) {
+        if (line === 'echo:busy: processing' || line == 'echo:busy: paused for user') {
             return void 0;
         }
 
-        if ( line === '//action:notification Click to Resume...') {
+        if (line === '//action:notification Click to Resume...') {
             this.completePause();
             return void 0;
         }
 
-        if ( line === '//action:notification 3D Printer Ready.') {
+        if (line === '//action:notification 3D Printer Ready.') {
             if (!this.resuming) {
                 console.log('Saw resume response while not resuming!');
                 return void 0;
