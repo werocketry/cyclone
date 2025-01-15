@@ -1,6 +1,6 @@
 # Docs
 
-Welcome to the docs! Currently we are using Node.js 16.13.0, Chromium 98.0.4758.102, and Electron 17.1.0.
+Welcome to the docs! Currently we are using Node.js 20.18.1, Chromium 130.0.6723.170, and Electron 33.3.1.
 
 ## Development and Testing
 
