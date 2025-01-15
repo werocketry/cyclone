@@ -4,7 +4,7 @@ Welcome to the docs! Currently we are using Node.js 20.18.1, Chromium 130.0.6723
 
 ## Development and Testing
 
-The script requires [node.js](https://nodejs.org/) (NOTE: Current scripts require Node.js 18). Once Node.js is installed and Cyclone is downloaded, navigate to the Cyclone directory in a terminal and start by installing the dependencies.
+The script requires [node.js](https://nodejs.org/). Once Node.js is installed and Cyclone is downloaded, navigate to the Cyclone directory in a terminal and start by installing the dependencies.
 
 ### 1. Install Dependencies
 
