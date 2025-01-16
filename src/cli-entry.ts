@@ -76,7 +76,7 @@ require('yargs').command({
         async handler(argv: Record<string, string>): Promise<void> {
             const inputFile = argv.filein;  // The first positional argument (i.e., the .wind file)
             const outputFile = argv.fileout;  // Output file passed via the -o flag
-            console.log('Parsed Arguments:', argv);
+         //   console.log('Parsed Arguments:', argv);
 
             if (!inputFile) {
                 console.error('Error: Input file is required');
