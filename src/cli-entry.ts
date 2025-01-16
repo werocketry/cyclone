@@ -57,7 +57,7 @@ require('yargs').command({
     }
 })
     .command({
-        command: 'plan <file>',
+        command: 'plan <fileout> <filein>',
         describe: 'Generate gcode from a .wind file',
         builder: {
             output: {
@@ -74,9 +74,14 @@ require('yargs').command({
             }
         },
         async handler(argv: Record<string, string>): Promise<void> {
-            const inputFile = argv._[1];  // The first positional argument (i.e., the .wind file)
-            const outputFile = argv.file;  // Output file passed via the -o flag
+            const inputFile = argv.filein;  // The first positional argument (i.e., the .wind file)
+            const outputFile = argv.fileout;  // Output file passed via the -o flag
+            console.log('Parsed Arguments:', argv);
 
+            if (!inputFile) {
+                console.error('Error: Input file is required');
+                return;
+            }
             if (!outputFile) {
                 console.error('Error: Output file is required');
                 return;
