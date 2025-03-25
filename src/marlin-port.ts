@@ -14,7 +14,7 @@ export class MarlinPort {
     private paused = false;
     private resuming = false;
 
-    constructor(private portPath: string, private verbose = false, private baudRate = 115200) {
+    constructor(private portPath: string, private verbose = false, private baudRate = 250000) {
 
     }
 
