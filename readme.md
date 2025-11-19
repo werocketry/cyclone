@@ -10,7 +10,7 @@ Cyclone is a script for generating and executing filament winding toolpaths. It 
 
 Cyclone is currently provided ony as the source code, which can be cloned or downloaded from this repository. The script requires [node.js](https://nodejs.org/) to run (NOTE - current scripts require node.js 18). Once node.js is installed and Cyclone is downloaded, navigate to the Cyclone directory in a terminal and install its dependencies with:
 
-```
+```sh
 npm install canvas
 npm i
 ```
@@ -23,74 +23,74 @@ Future releases of Cyclone might include the ability to specify which gcode axis
 
 The command for generating a gcode file with Cyclone is:
 
-```
+```sh
 npm run cli -- plan -o <gcode output file> <wind input file>
 ```
 
 Example:
 
-```
+```sh
 npm run cli -- plan -o examples/output.gcode examples/input.wind
 ```
 
 The input to Cyclone that specifies the parameters of the tube you wish to make is a `.wind` file, which use JSON formatting and metric units. At the top level, they consist of these sections:
 
-```
+```json
 {
-    "layers": [],
-    "mandrelParameters": {
-        "diameter": 69.75,
-        "windLength": 940
-    },
-    "towParameters": {
-        "width": 7,
-        "thickness": 0.5
-    },
-    "defaultFeedRate": 9000
+  "layers": [],
+  "mandrelParameters": {
+    "diameter": 69.75,
+    "windLength": 940
+  },
+  "towParameters": {
+    "width": 7,
+    "thickness": 0.5
+  },
+  "defaultFeedRate": 9000
 }
 ```
 
-### Layers:
+### Layers
 
 `layers` is an array of the definitions of the layers that you would like the machine to wind, in the order that they will be wound. Each element in the array can be either a hoop wind or a helical wind.
 
-#### Hoop Winds:
+#### Hoop Winds
 
 A hoop wind can be added to the laminate with:
 
-```
+```json
 {
-    "windType": "hoop",
-    "terminal": false
+  "windType": "hoop",
+  "terminal": false
 }
 ```
 
 The single parameter, `"terminal"`, sets if the machine should do a there-and-back circuit, or just wind from one end of the mandrel to the other and stop, which is useful for application of heat shrink tape. An error will be produced if any layers follow a terminal layer, and planning will end.
 
-#### Helical Winds:
+#### Helical Winds
 
 A helical wind can be added to the laminate with:
 
-```
+```json
 {
-    "windType": "helical",
-    "windAngle": 55,
-    "patternNumber": 2,
-    "skipIndex": 1,
-    "lockDegrees": 720,
-    "leadInMM": 30,
-    "leadOutDegrees": 90,
-    "skipInitialNearLock": true
+  "windType": "helical",
+  "windAngle": 55,
+  "patternNumber": 2,
+  "skipIndex": 1,
+  "lockDegrees": 720,
+  "leadInMM": 30,
+  "leadOutDegrees": 90,
+  "skipInitialNearLock": true
 }
 ```
 
 The most commonly changed parameters are `"windAngle"`(in degrees), and `"patternNumber"`/`"skipIndex"`. The latter two parameters are standard in filament winding and other resources describe in detail, but in summary, the "pattern number" sets how many evenly-distributed "start positions" there will be around the mandrel, and the "skip index" is the increment that will be applied to the "start position" index at the end of a circuit to know where to start the next one. The remaining parameters are for fine tuning, and will be documented when they stabilize more.
 
-### Tow Parameters:
+### Tow Parameters
 
 `"towParamers"` is where you input details about the tow that the tube is wound from. The `"thickness"` parameter is currently unused.
 
-### Mandrel Parameters:
+### Mandrel Parameters
 
 `"mandrelParameters"` includes the mandrel diameter, and the length of the mandrel that you would like to wind on. The actual length of usuable tube will be less than this due to the "locks" (excess build up of material at either end of the tube where the carriage turns around) which are usually cut off.
 
@@ -98,7 +98,7 @@ The most commonly changed parameters are `"windAngle"`(in degrees), and `"patter
 
 After generating a GCode file, you can visualize it by plotting it to a PNG image. The command for this is:
 
-```
+```sh
 npm run cli -- plot -o <png output file> <gcode file>
 ```
 
@@ -109,7 +109,7 @@ This allows you to review the toolpath before running it on your machine.
 
 Example:
 
-```
+```sh
 npm run cli -- plot -o examples/plotted.png examples/output.gcode
 ```
 
@@ -117,7 +117,7 @@ npm run cli -- plot -o examples/plotted.png examples/output.gcode
 
 There are several, controller-dependent options when you have generated a gcode file and wish to run it on your machine. For Marlin-driven machines, Cylone has a command for streaming the gcode to the controller and displaying the progress in a terminal. The syntax for this command is:
 
-```
+```sh
 npm run cli -- run -p <port> <gcode file>
 ```
 
