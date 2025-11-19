@@ -1,6 +1,6 @@
-# Tests
+# Examples
 
-Currently the tests are done manually. To run the tests, follow these steps:
+To run all the examples, follow these steps:
 
 ```sh
 mkdir tests/outputs/simple-hoop -ErrorAction SilentlyContinue

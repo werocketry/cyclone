@@ -4,12 +4,12 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("electron", {
-  plan: (windFileName: string, outputFilePath: string) => {
-    console.log('IPC Plan call - Wind File Name:', windFileName);
+  plan: (windFilePath: string, outputFilePath: string) => {
+    console.log('IPC Plan call - Wind File Path:', windFilePath);
     console.log('IPC Plan call - Output File Path:', outputFilePath);
 
     // Send the data to the main process
-    return ipcRenderer.invoke("plan", { windFileName, outputFilePath });
+    return ipcRenderer.invoke("plan", { windFilePath, outputFilePath });
   },
   plot: (gcodeFilePath: string, outputFilePath: string) => {
     console.log('IPC Plot call - GCode File Path:', gcodeFilePath);

@@ -18,7 +18,11 @@ function createWindow() {
   });
 
   mainWindow.loadFile(path.join(__dirname, "../index.html"));
-  mainWindow.webContents.openDevTools();
+
+  // Avoid auto-opening DevTools unless the developer explicitly opts in.
+  if (process.env.CYCLONE_DEVTOOLS === "true") {
+    mainWindow.webContents.openDevTools();
+  }
 }
 
 // Electron ready event
@@ -37,11 +41,8 @@ app.on("window-all-closed", () => {
 });
 
 // IPC Handlers
-ipcMain.handle("plan", async (_, { windFile, outputFilePath }) => {
+ipcMain.handle("plan", async (_, { windFilePath, outputFilePath }) => {
   try {
-    // Get the absolute file path from the renderer's File object
-    const windFilePath = windFile.path; // This should now be passed from the renderer
-
     console.log("IPC Plan call - Wind File Path:", windFilePath);
     console.log("IPC Plan call - Output File Path:", outputFilePath);
 
