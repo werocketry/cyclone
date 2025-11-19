@@ -1,3 +1,5 @@
+import type { DialogOptions } from "./dialog-types";
+
 // This file is required by the index.html file and will
 // be executed in the renderer process for that window.
 // No Node.js APIs are available in this process unless
@@ -33,12 +35,12 @@ const registerBrowseButton = (
   buttonId: string,
   inputId: string,
   dialogType: "open" | "save",
-  options: Parameters<typeof window.electron.openFileDialog>[0],
+  options?: DialogOptions,
 ) => {
   document.getElementById(buttonId)?.addEventListener("click", async () => {
     try {
-      const dialogOptions = {
-        ...options,
+      const dialogOptions: DialogOptions = {
+        ...(options ?? {}),
         defaultPath: getInputValue(inputId) || options?.defaultPath,
       };
       const path =

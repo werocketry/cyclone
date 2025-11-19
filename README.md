@@ -1,6 +1,6 @@
 # Cyclone
 
-We are using Node.js 20.18.1, Chromium 130.0.6723.170, and Electron 33.3.1.
+We are using Node.js 20.18.1, Chromium 130.0.6723.170, and Electron 39.2.2.
 
 ## Overview
 
@@ -8,7 +8,7 @@ Cyclone is a script for generating and executing filament winding toolpaths. It 
 
 ## Download and Setup
 
-Cyclone is currently provided ony as the source code, which can be cloned or downloaded from this repository. The script requires [node.js](https://nodejs.org/) to run (NOTE - current scripts require node.js 18). Once node.js is installed and Cyclone is downloaded, navigate to the Cyclone directory in a terminal and install its dependencies with:
+Cyclone is currently provided ony as the source code, which can be cloned or downloaded from this repository. The script requires [node.js](https://nodejs.org/) to run (NOTE - current scripts require node.js 20). Once node.js is installed and Cyclone is downloaded, navigate to the Cyclone directory in a terminal and install its dependencies with:
 
 ```sh
 npm install canvas
@@ -122,6 +122,15 @@ npm run cli -- run -p <port> <gcode file>
 ```
 
 To interrupt your machine while this command is running, press ctrl-c in your terminal window, or use the reset button on your Marlin board, which will stop motion and also exit the script.
+
+## Packaging and Releases
+
+Cyclone now ships with scripts for building distributable artifacts:
+
+- Electron desktop builds: `npm run package:electron -- --win` (or `--mac`, `--linux`). The command assumes `npm run build` has already produced the compiled JavaScript and writes installers into `release/` using `electron-builder`.
+- CLI tarball: `npm run package:cli` wraps the compiled CLI into an npm-compatible archive (the `prepack` hook automatically runs `npm run build`).
+
+A GitHub Actions workflow (`.github/workflows/build.yml`) runs on every push/PR to `main`, linting the codebase, compiling TypeScript, generating installers for Windows, macOS, and Linux, and uploading both the Electron installers and CLI tarball as build artifacts.
 
 ## License
 

@@ -1,0 +1,23 @@
+appId: net.reilley.cyclone
+productName: Cyclone
+directories:
+  output: release
+files:
+  - dist/**
+  - index.html
+  - package.json
+asar: true
+extraMetadata:
+  main: dist/main.js
+mac:
+  artifactName: cyclone-${version}-mac.dmg
+  target:
+    - dmg
+win:
+  artifactName: cyclone-${version}-win.exe
+  target:
+    - nsis
+linux:
+  artifactName: cyclone-${version}-linux.AppImage
+  target:
+    - AppImage

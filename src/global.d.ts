@@ -1,21 +1,6 @@
-import { IpcRenderer } from 'electron';
-
-type DialogFilter = {
-    name: string;
-    extensions: string[];
-};
-
-type DialogOptions = {
-    title?: string;
-    defaultPath?: string;
-    filters?: DialogFilter[];
-};
+import type { DialogFilter, DialogOptions } from './dialog-types';
 
 declare global {
-    interface File {
-        path?: string;
-    }
-
     interface Window {
         electron: {
             plan: (windFilePath: string, outputFilePath: string) => Promise<{ message: string }>;
@@ -26,3 +11,5 @@ declare global {
         };
     }
 }
+
+export {};

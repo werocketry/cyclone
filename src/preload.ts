@@ -1,18 +1,8 @@
 // All of the Node.js APIs are available in the preload process.
 // It has the same sandbox as a Chrome extension.
 
-const { contextBridge, ipcRenderer } = require("electron");
-
-type DialogFilter = {
-  name: string;
-  extensions: string[];
-};
-
-type DialogOptions = {
-  title?: string;
-  defaultPath?: string;
-  filters?: DialogFilter[];
-};
+import { contextBridge, ipcRenderer } from "electron";
+import type { DialogFilter, DialogOptions } from "./dialog-types";
 
 const sanitizeDialogOptions = (options: DialogOptions = {}): DialogOptions => {
   const cleanFilters = Array.isArray(options.filters)

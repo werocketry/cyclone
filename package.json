@@ -3,12 +3,26 @@
   "version": "0.1.0",
   "description": "Control software for Marlin-driven filament winders",
   "main": "dist/main.js",
+  "bin": {
+    "cyclone-cli": "dist/cli-entry.js"
+  },
+  "files": [
+    "dist/**/*",
+    "index.html",
+    "docs/**/*",
+    "examples/**/*",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
     "lint": "eslint -c .eslintrc --ext .ts ./src",
     "start": "npm run build && electron ./dist/main.js",
-    "cli": "npm run build && node ./dist/cli-entry.js"
+    "cli": "npm run build && node ./dist/cli-entry.js",
+    "prepack": "npm run build",
+    "postinstall": "electron-builder install-app-deps",
+    "package:electron": "electron-builder --config electron-builder.yml --publish never",
+    "package:cli": "npm pack"
   },
   "repository": {
     "type": "git",
@@ -36,8 +50,12 @@
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
     "electron": "^39.2.2",
+    "electron-builder": "^26.0.12",
     "electron-rebuild": "^3.2.9",
     "eslint": "^7.32.0",
     "typescript": "^4.5.5"
+  },
+  "overrides": {
+    "node-abi": "^4.24.0"
   }
 }
