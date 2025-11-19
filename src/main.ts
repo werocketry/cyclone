@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain, dialog } from "electron";
 import * as path from "path";
 import { promises as fsPromises } from 'fs';
 import { createWriteStream } from 'fs';
@@ -6,13 +6,26 @@ import { MarlinPort } from "./marlin-port";
 import { planWind } from "./planner";
 import { plotGCode } from "./plotter";
 
+type DialogFilter = {
+  name: string;
+  extensions: string[];
+};
+
+type SanitizedDialogOptions = {
+  title?: string;
+  defaultPath?: string;
+  filters?: DialogFilter[];
+};
+
 // Function to create the window
 function createWindow() {
   const mainWindow = new BrowserWindow({
     height: 600,
     width: 800,
     webPreferences: {
-      nodeIntegration: false, // Important for security
+      nodeIntegration: false,
+      contextIsolation: true,
+      sandbox: false,
       preload: path.join(__dirname, "preload.js"),
     },
   });
@@ -24,6 +37,53 @@ function createWindow() {
     mainWindow.webContents.openDevTools();
   }
 }
+
+const normalizeFilters = (filters?: DialogFilter[]) => {
+  if (!filters) {
+    return undefined;
+  }
+
+  return filters
+    .filter((filter): filter is DialogFilter => {
+      return Boolean(filter && Array.isArray(filter.extensions));
+    })
+    .map((filter) => ({
+      name: filter.name,
+      extensions: filter.extensions
+        .map((ext) => ext.replace(/^\./, ""))
+        .filter((ext) => ext.length > 0),
+    }))
+    .filter((filter) => filter.extensions.length > 0);
+};
+
+ipcMain.handle("dialog:openFile", async (_, options: SanitizedDialogOptions = {}) => {
+  const result = await dialog.showOpenDialog({
+    title: options.title,
+    defaultPath: options.defaultPath,
+    filters: normalizeFilters(options.filters),
+    properties: ["openFile"],
+  });
+
+  if (result.canceled || result.filePaths.length === 0) {
+    return null;
+  }
+
+  return result.filePaths[0];
+});
+
+ipcMain.handle("dialog:saveFile", async (_, options: SanitizedDialogOptions = {}) => {
+  const result = await dialog.showSaveDialog({
+    title: options.title,
+    defaultPath: options.defaultPath,
+    filters: normalizeFilters(options.filters),
+  });
+
+  if (result.canceled || !result.filePath) {
+    return null;
+  }
+
+  return result.filePath;
+});
 
 // Electron ready event
 app.on("ready", () => {

@@ -4,75 +4,129 @@
 // nodeIntegration is set to true in webPreferences.
 // Use preload.js to selectively enable features
 // needed in the renderer process.
-const getFileSystemPath = (file?: File | null) => {
-  if (!file) {
-    return null;
-  }
-  const electronFile = file as File & { path?: string };
-  return electronFile.path ?? null;
+const getInputValue = (id: string) => {
+  const input = document.getElementById(id) as HTMLInputElement | null;
+  return input?.value.trim() ?? "";
 };
 
+const setInputValue = (id: string, value: string) => {
+  const input = document.getElementById(id) as HTMLInputElement | null;
+  if (input) {
+    input.value = value;
+  }
+};
+
+const setOutputMessage = (id: string, message: string) => {
+  const output = document.getElementById(id);
+  if (output) {
+    output.textContent = message;
+  }
+};
+
+const handleErrorMessage = (id: string, error: unknown) => {
+  const message = error instanceof Error ? error.message : String(error);
+  setOutputMessage(id, `Error: ${message}`);
+  console.error(message);
+};
+
+const registerBrowseButton = (
+  buttonId: string,
+  inputId: string,
+  dialogType: "open" | "save",
+  options: Parameters<typeof window.electron.openFileDialog>[0],
+) => {
+  document.getElementById(buttonId)?.addEventListener("click", async () => {
+    try {
+      const dialogOptions = {
+        ...options,
+        defaultPath: getInputValue(inputId) || options?.defaultPath,
+      };
+      const path =
+        dialogType === "open"
+          ? await window.electron.openFileDialog(dialogOptions)
+          : await window.electron.saveFileDialog(dialogOptions);
+
+      if (path) {
+        setInputValue(inputId, path);
+      }
+    } catch (error) {
+      console.error(`Dialog error for ${buttonId}:`, error);
+    }
+  });
+};
+
+registerBrowseButton("wind-file-browse", "wind-file-path", "open", {
+  title: "Select a .wind definition",
+  filters: [{ name: "Wind Files", extensions: ["wind", "json"] }],
+});
+
+registerBrowseButton("output-file-plan-browse", "output-file-plan", "save", {
+  title: "Save generated GCode",
+  filters: [{ name: "GCode", extensions: ["gcode"] }],
+});
+
+registerBrowseButton("gcode-file-plot-browse", "gcode-file-plot", "open", {
+  title: "Select an existing GCode file",
+  filters: [{ name: "GCode", extensions: ["gcode"] }],
+});
+
+registerBrowseButton("output-file-plot-browse", "output-file-plot", "save", {
+  title: "Save plotted PNG",
+  filters: [{ name: "PNG Images", extensions: ["png"] }],
+});
+
+registerBrowseButton("gcode-file-run-browse", "gcode-file-run", "open", {
+  title: "Select a GCode file to stream",
+  filters: [{ name: "GCode", extensions: ["gcode"] }],
+});
+
 document.getElementById("plan-button")?.addEventListener("click", async () => {
-  const windFile = (document.getElementById("wind-file") as HTMLInputElement)?.files?.[0];
-  const outputFile = (document.getElementById("output-file-plan") as HTMLInputElement)?.value;
+  const windFilePath = getInputValue("wind-file-path");
+  const outputFile = getInputValue("output-file-plan");
 
-  console.log("Wind File:", windFile);
-  console.log("Output File:", outputFile);
+  if (!windFilePath || !outputFile) {
+    setOutputMessage("plan-output", "Select both a .wind file and output path before planning.");
+    return;
+  }
 
-  const windFilePath = getFileSystemPath(windFile);
-
-  if (windFilePath && outputFile) {
-    console.log("Wind File Path:", windFilePath);
-
+  try {
     const result = await window.electron.plan(windFilePath, outputFile);
-    document.getElementById("plan-output")!.textContent = result.message;
-  } else {
-    console.error("Wind file path or output file missing");
+    setOutputMessage("plan-output", result.message);
+  } catch (error) {
+    handleErrorMessage("plan-output", error);
   }
 });
 
 document.getElementById("plot-button")?.addEventListener("click", async () => {
-  const gcodeFile = (document.getElementById("gcode-file-plot") as HTMLInputElement)?.files?.[0];
-  const outputFile = (document.getElementById("output-file-plot") as HTMLInputElement)?.value;
+  const gcodeFilePath = getInputValue("gcode-file-plot");
+  const outputFile = getInputValue("output-file-plot");
 
-  // Debugging logs to check selected file and output path
-  console.log('GCode File:', gcodeFile);
-  console.log('Output File for Plot:', outputFile);
+  if (!gcodeFilePath || !outputFile) {
+    setOutputMessage("plot-output", "Select both a GCode file and PNG destination before plotting.");
+    return;
+  }
 
-  const gcodeFilePath = getFileSystemPath(gcodeFile);
-
-  if (gcodeFilePath && outputFile) {
-    try {
-      const result = await window.electron.plot(gcodeFilePath, outputFile); // Use window.electron
-      console.log('Result from plot:', result); // Log result to verify response
-      document.getElementById("plot-output")!.textContent = result.message;
-    } catch (error) {
-      console.error('Error in plot operation:', error);
-    }
-  } else {
-    console.error('GCode file path or output file for plot is missing');
+  try {
+    const result = await window.electron.plot(gcodeFilePath, outputFile);
+    setOutputMessage("plot-output", result.message);
+  } catch (error) {
+    handleErrorMessage("plot-output", error);
   }
 });
 
 document.getElementById("run-button")?.addEventListener("click", async () => {
-  const gcodeFile = (document.getElementById("gcode-file-run") as HTMLInputElement)?.files?.[0];
-  const serialPort = (document.getElementById("serial-port") as HTMLInputElement)?.value;
+  const gcodeFilePath = getInputValue("gcode-file-run");
+  const serialPort = getInputValue("serial-port");
 
-  // Debugging logs to check selected file and serial port
-  console.log('GCode File for Run:', gcodeFile);
-  console.log('Serial Port:', serialPort);
+  if (!gcodeFilePath || !serialPort) {
+    setOutputMessage("run-output", "Select a GCode file and enter a serial port before running.");
+    return;
+  }
 
-  const gcodeFilePath = getFileSystemPath(gcodeFile);
-
-  if (gcodeFilePath && serialPort) {
-    try {
-      const result = await window.electron.run(gcodeFilePath, serialPort); // Use window.electron
-      console.log('Result from run:', result); // Log result to verify response
-      document.getElementById("run-output")!.textContent = result.message;
-    } catch (error) {
-      console.error('Error in run operation:', error);
-    }
-  } else {
-    console.error('GCode file path or serial port is missing');
+  try {
+    const result = await window.electron.run(gcodeFilePath, serialPort);
+    setOutputMessage("run-output", result.message);
+  } catch (error) {
+    handleErrorMessage("run-output", error);
   }
 });

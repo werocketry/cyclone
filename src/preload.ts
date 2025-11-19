@@ -3,6 +3,37 @@
 
 const { contextBridge, ipcRenderer } = require("electron");
 
+type DialogFilter = {
+  name: string;
+  extensions: string[];
+};
+
+type DialogOptions = {
+  title?: string;
+  defaultPath?: string;
+  filters?: DialogFilter[];
+};
+
+const sanitizeDialogOptions = (options: DialogOptions = {}): DialogOptions => {
+  const cleanFilters = Array.isArray(options.filters)
+    ? options.filters
+        .filter((filter) => Boolean(filter && Array.isArray(filter.extensions)))
+        .map((filter) => ({
+          name: filter.name,
+          extensions: filter.extensions
+            .map((ext) => (typeof ext === "string" ? ext.replace(/^\./, "") : ""))
+            .filter((ext) => ext.length > 0),
+        }))
+        .filter((filter) => filter.extensions.length > 0)
+    : undefined;
+
+  return {
+    title: typeof options.title === "string" ? options.title : undefined,
+    defaultPath: typeof options.defaultPath === "string" ? options.defaultPath : undefined,
+    filters: cleanFilters,
+  };
+};
+
 contextBridge.exposeInMainWorld("electron", {
   plan: (windFilePath: string, outputFilePath: string) => {
     console.log('IPC Plan call - Wind File Path:', windFilePath);
@@ -20,6 +51,12 @@ contextBridge.exposeInMainWorld("electron", {
     console.log('IPC Run call - GCode File Path:', gcodeFilePath);
     console.log('IPC Run call - Serial Port:', serialPort);
     return ipcRenderer.invoke("run", { gcodeFilePath, serialPort });
+  },
+  openFileDialog: (options?: DialogOptions) => {
+    return ipcRenderer.invoke("dialog:openFile", sanitizeDialogOptions(options));
+  },
+  saveFileDialog: (options?: DialogOptions) => {
+    return ipcRenderer.invoke("dialog:saveFile", sanitizeDialogOptions(options));
   },
 });
 

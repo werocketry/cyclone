@@ -15,11 +15,13 @@
   <!-- Plan GCode -->
   <section>
     <h2>Plan GCode</h2>
-    <label for="wind-file">Select .wind file:</label>
-    <input type="file" id="wind-file" />
+    <label for="wind-file-path">Select .wind file:</label>
+    <input type="text" id="wind-file-path" placeholder="Select a .wind file" readonly />
+    <button id="wind-file-browse">Browse…</button>
     <br />
-    <label for="output-file-plan">Output file name:</label>
-    <input type="text" id="output-file-plan" placeholder="output.gcode" />
+    <label for="output-file-plan">Output file:</label>
+    <input type="text" id="output-file-plan" placeholder="Choose a .gcode destination" readonly />
+    <button id="output-file-plan-browse">Save As…</button>
     <br />
     <button id="plan-button">Generate GCode</button>
     <pre id="plan-output"></pre>
@@ -29,10 +31,12 @@
   <section>
     <h2>Plot GCode</h2>
     <label for="gcode-file-plot">Select GCode file:</label>
-    <input type="file" id="gcode-file-plot" />
+    <input type="text" id="gcode-file-plot" placeholder="Select a .gcode file" readonly />
+    <button id="gcode-file-plot-browse">Browse…</button>
     <br />
-    <label for="output-file-plot">Output PNG name:</label>
-    <input type="text" id="output-file-plot" placeholder="output.png" />
+    <label for="output-file-plot">Output PNG:</label>
+    <input type="text" id="output-file-plot" placeholder="Choose a .png destination" readonly />
+    <button id="output-file-plot-browse">Save As…</button>
     <br />
     <button id="plot-button">Visualize GCode</button>
     <pre id="plot-output"></pre>
@@ -42,7 +46,8 @@
   <section>
     <h2>Run GCode</h2>
     <label for="gcode-file-run">Select GCode file:</label>
-    <input type="file" id="gcode-file-run" />
+    <input type="text" id="gcode-file-run" placeholder="Select a .gcode file" readonly />
+    <button id="gcode-file-run-browse">Browse…</button>
     <br />
     <label for="serial-port">Serial Port:</label>
     <input type="text" id="serial-port" placeholder="/dev/ttyUSB0" />
