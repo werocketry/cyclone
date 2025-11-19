@@ -1,4 +1,4 @@
-import type { DialogFilter, DialogOptions } from './dialog-types';
+import type { DialogOptions } from './dialog-types';
 
 declare global {
     interface Window {

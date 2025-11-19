@@ -128,6 +128,7 @@ To interrupt your machine while this command is running, press ctrl-c in your te
 Cyclone now ships with scripts for building distributable artifacts:
 
 - Electron desktop builds: `npm run package:electron -- --win` (or `--mac`, `--linux`). The command assumes `npm run build` has already produced the compiled JavaScript and writes installers into `release/` using `electron-builder`.
+- Platform-specific note: you can only build installers for the host OS (e.g., Windows can only run `--win`). Use the GitHub Actions workflow to produce macOS/Linux artifacts when developing on Windows.
 - CLI tarball: `npm run package:cli` wraps the compiled CLI into an npm-compatible archive (the `prepack` hook automatically runs `npm run build`).
 
 A GitHub Actions workflow (`.github/workflows/build.yml`) runs on every push/PR to `main`, linting the codebase, compiling TypeScript, generating installers for Windows, macOS, and Linux, and uploading both the Electron installers and CLI tarball as build artifacts.

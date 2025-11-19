@@ -1,6 +1,5 @@
-import { createCanvas, loadImage } from 'canvas';
+import { createCanvas } from 'canvas';
 import { Readable } from 'stream';
-import { ICoordinate2D } from './types'
 import { generateCoordinates } from './helpers';
 import { IMandrelParameters, ITowParameters } from '../planner/types';
 
@@ -77,4 +76,4 @@ export function plotGCode(gcode: string[]): Readable | void {
     }
 
     return canvas.createPNGStream();
-};
+}
