@@ -1,7 +1,7 @@
 import { ECoordinateAxes, TCoordinateAxes } from './types';
 
 // Turn a coordinate into a nicely formatted string
-export function serializeCoordinate(coordinate: TCoordinateAxes) {
+export function serializeCoordinate(coordinate: TCoordinateAxes): string {
     return `{${coordinate[ECoordinateAxes.CARRIAGE]} ${coordinate[ECoordinateAxes.MANDREL]} ${coordinate[ECoordinateAxes.DELIVERY_HEAD]}}`
 }
 
